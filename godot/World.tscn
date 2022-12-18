@@ -5,7 +5,7 @@
 [ext_resource path="res://Player.tscn" type="PackedScene" id=3]
 
 [sub_resource type="BoxShape" id=1]
-extents = Vector3( 100, 0.1, 100 )
+extents = Vector3( 1000, 0.1, 1000 )
 
 [sub_resource type="SpatialMaterial" id=5]
 albedo_color = Color( 0.239216, 0.317647, 0.117647, 1 )
@@ -61,3 +61,6 @@ shadow_enabled = true
 [node name="Player" parent="." instance=ExtResource( 3 )]
 
 [node name="CameraPivot" parent="Player" instance=ExtResource( 2 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0 )
+
+[editable path="Player/CameraPivot"]

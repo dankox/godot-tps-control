@@ -5,6 +5,9 @@ __meta__ = {
 "_edit_group_": true
 }
 
-[node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.941312, 0.337539, 0, -0.337539, 0.941312, 0, 3.8, 4 )
+[node name="cam_x_rot" type="Position3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 2.38419e-07, 2.38419e-07 )
+
+[node name="Camera" type="Camera" parent="cam_x_rot"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4 )
 far = 200.0

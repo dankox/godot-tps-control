@@ -3,10 +3,12 @@ use gdnative::{
     prelude::*,
 };
 
-use crate::OptRef;
+use crate::{clamp, OptRef};
 
 const CAMERA_MOUSE_SPEED: f32 = 0.001;
 const CAMERA_CONTROLLER_SPEED: f32 = 0.1;
+const CAMERA_X_ROT_MIN: f32 = -89.9;
+const CAMERA_X_ROT_MAX: f32 = 70.0;
 
 #[derive(NativeClass)]
 #[inherit(KinematicBody)]
@@ -20,7 +22,9 @@ pub struct Player {
 
     velocity: Vector3,
     motion: Vector2,
+    cam_x_rot: f32,
     cam_pivot: OptRef<Position3D>,
+    cam_pivot_x: OptRef<Position3D>,
     // camera: OptRef<Camera>,
 }
 
@@ -33,7 +37,9 @@ impl Player {
             jump_impulse: 20.0,
             velocity: Vector3::ZERO,
             motion: Vector2::ZERO,
+            cam_x_rot: 0.0,
             cam_pivot: OptRef::None,
+            cam_pivot_x: OptRef::None,
         }
     }
 
@@ -48,6 +54,7 @@ impl Player {
         base.upcast::<Node>().print_tree_pretty();
         // self.cam_pivot = OptRef::Some(get_node!(base, "CameraPivot", Position3D));
         self.cam_pivot = OptRef::from_node(base, "CameraPivot");
+        self.cam_pivot_x = OptRef::from_node(base, "CameraPivot/cam_x_rot");
     }
 
     #[method]
@@ -100,8 +107,25 @@ impl Player {
     }
 
     fn rotate_cam(&mut self, look: Vector2) {
-        // process the rotation
-        self.cam_pivot.tref().rotate(Vector3::UP, -look.x as f64);
-        self.cam_pivot.tref().rotate(Vector3::LEFT, look.y as f64);
+        // if no camera, just finish
+        if let OptRef::None = self.cam_pivot {
+            return;
+        }
+
+        // process camera rotation
+        let cam = self.cam_pivot.tref();
+        // rotate left/right
+        cam.rotate_y(-look.x as f64);
+
+        // compute how much to rotate
+        self.cam_x_rot += look.y;
+        self.cam_x_rot = clamp(
+            self.cam_x_rot,
+            CAMERA_X_ROT_MIN.to_radians(),
+            CAMERA_X_ROT_MAX.to_radians(),
+        );
+        self.cam_pivot_x
+            .tref()
+            .set_rotation(Vector3::new(-self.cam_x_rot, 0.0, 0.0));
     }
 }

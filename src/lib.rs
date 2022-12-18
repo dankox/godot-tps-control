@@ -68,6 +68,14 @@ impl<T: gdnative::prelude::GodotObject> OptRef<T> {
     }
 }
 
+pub fn clamp<T: std::cmp::PartialOrd>(value: T, min: T, max: T) -> T {
+    assert!(min <= max);
+    let mut x = value;
+    if x < min { x = min; }
+    if x > max { x = max; }
+    x
+}
+
 // mod utils;
 
 mod player;
