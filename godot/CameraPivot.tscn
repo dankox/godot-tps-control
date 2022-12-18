@@ -1,6 +1,6 @@
 [gd_scene format=2]
 
-[node name="CameraFollow" type="Position3D"]
+[node name="CameraPivot" type="Position3D"]
 __meta__ = {
 "_edit_group_": true
 }
