@@ -35,8 +35,8 @@ pub enum OptRef<T: gdnative::prelude::GodotObject> {
 }
 
 impl<T: gdnative::prelude::GodotObject> OptRef<T> {
-    /// Creates `OptRef<T>` value using Godot `node` object 
-    /// (which in most cases will be base or owner) 
+    /// Creates `OptRef<T>` value using Godot `node` object
+    /// (which in most cases will be base or owner)
     /// and `path` to the referenced node.
     #[inline]
     pub fn from_node<B>(node: &B, path: &str) -> OptRef<T>
