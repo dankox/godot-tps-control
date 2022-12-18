@@ -23,10 +23,14 @@ macro_rules! v {
 	};
 }
 
+// mod utils;
+
 mod world;
+mod player;
 
 fn register_classes(handle: InitHandle) {
 	handle.add_class::<world::World>();
+	handle.add_class::<player::Player>();
 }
 
 godot_init!(register_classes);
