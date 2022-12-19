@@ -1,6 +1,6 @@
-# Dslike
+# TPS controller
 
-My try on implementing basic 3D game.
+My try on implementing basic third person controller.
 
 ## Setup
 Run `setup.sh` to build the native library and create symbolic link in `godot/` directory which is used by Godot.

@@ -7,9 +7,9 @@ reloadable=true
 
 [entry]
 
-OSX.64="res://libdslike.dylib"
-Windows.64="res://dslike.dll"
-X11.64="res://libdslike.so"
+OSX.64="res://libtps_control.dylib"
+Windows.64="res://tps_control.dll"
+X11.64="res://libtps_control.so"
 
 [dependencies]
 

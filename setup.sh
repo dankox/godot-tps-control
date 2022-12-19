@@ -3,7 +3,7 @@
 cargo build
 cd godot
 
-name="dslike"
+name="tps_control"
 
 if [ "$OS" = "Windows_NT" ]; then
 	rustlib="${name}.dll"
