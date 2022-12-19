@@ -71,14 +71,19 @@ impl Player {
     #[method]
     fn _physics_process(&mut self, #[base] base: &KinematicBody, _delta: f64) {
         // godot_print!("delta: {}", delta);
-        self.process_input(base);
-        self.velocity.y -= self.fall_acceleration * self.speed;
+        self.process_input();
+        // self.velocity.x = self.motion.x * self.speed;
+        // self.velocity.z = self.motion.y * self.speed;
+        // self.velocity.y -= self.fall_acceleration * self.speed;
+        self.velocity.x = self.motion.x;
+        self.velocity.z = self.motion.y;
+        self.velocity.y -= self.fall_acceleration;
 
-        self.velocity = base.move_and_slide(self.velocity, Vector3::UP, false, 4, 0.785398, true);
+        self.velocity = base.move_and_slide(self.velocity * self.speed, Vector3::UP, false, 4, 0.785398, true);
         // or last parameter `false` to interact with RigidBody?
     }
 
-    fn process_input(&mut self, _base: &KinematicBody) {
+    fn process_input(&mut self) {
         let mut look = Vector2::ZERO;
         let input = Input::godot_singleton();
 
@@ -90,10 +95,8 @@ impl Player {
         // adjust length only if it goes over 1.0 to allow walking
         if self.motion.length() > 1.0 {
             self.motion = self.motion.normalized();
-            godot_print!("motion {}x{}", self.motion.x, self.motion.y);
+            // godot_print!("motion {}x{}", self.motion.x, self.motion.y);
         }
-        self.velocity.x = self.motion.x * self.speed;
-        self.velocity.z = self.motion.y * self.speed;
 
         // controller camera
         look.x = (input.get_action_strength("look_right", false)
