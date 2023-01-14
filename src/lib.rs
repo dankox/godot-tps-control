@@ -38,6 +38,10 @@ impl<T: gdnative::prelude::GodotObject> OptRef<T> {
     /// Creates `OptRef<T>` value using Godot `node` object
     /// (which in most cases will be base or owner)
     /// and `path` to the referenced node.
+    ///
+    /// If `path` or type of node is incorrect, it will return
+    /// `OptRef::None` and will print godot error message with
+    /// description what didn't match
     #[inline]
     pub fn from_node<B>(node: &B, path: &str) -> OptRef<T>
     where
@@ -47,7 +51,14 @@ impl<T: gdnative::prelude::GodotObject> OptRef<T> {
         unsafe {
             match node.get_node_as::<T>(path) {
                 Some(val) => OptRef::Some(val.claim()),
-                None => OptRef::None,
+                None => {
+                    godot_error!(
+                        "called `OptTRef::from_node()` on non existent path '{}' or type '{}'",
+                        path,
+                        std::any::type_name::<T>()
+                    );
+                    OptRef::None
+                }
             }
         }
     }
@@ -63,7 +74,33 @@ impl<T: gdnative::prelude::GodotObject> OptRef<T> {
     {
         match self {
             OptRef::Some(val) => unsafe { val.assume_safe() },
-            OptRef::None => panic!("called `OptTRef::tref()` on a `None` value"),
+            OptRef::None => {
+                godot_error!("called `OptTRef::tref()` on a `None` value");
+                panic!("called `OptTRef::tref()` on a `None` value");
+            }
+        }
+    }
+
+    /// Set `transform` property for `Spatial` node (or for subclass of it) to new
+    /// transform.
+    ///
+    /// If the actual value of `OptTRef` is `None`, it will report a godot error with
+    /// details and continue.
+    #[inline]
+    pub fn set_transform<'a, 'r>(&'r self, transform: Transform)
+    where
+        AssumeSafeLifetime<'a, 'r>: LifetimeConstraint<T::Memory>,
+        T: SubClass<Spatial> + 'a,
+    {
+        match self {
+            OptRef::Some(val) => {
+                let tr = unsafe { val.assume_safe() };
+                tr.upcast::<Spatial>().set("transform", transform);
+            }
+            OptRef::None => godot_error!(
+                "called `OptTRef::set_transform()` on non `Spatial` node of type: {}",
+                std::any::type_name::<T>()
+            ),
         }
     }
 }
@@ -71,8 +108,12 @@ impl<T: gdnative::prelude::GodotObject> OptRef<T> {
 pub fn clamp<T: std::cmp::PartialOrd>(value: T, min: T, max: T) -> T {
     assert!(min <= max);
     let mut x = value;
-    if x < min { x = min; }
-    if x > max { x = max; }
+    if x < min {
+        x = min;
+    }
+    if x > max {
+        x = max;
+    }
     x
 }
 
