@@ -48,12 +48,6 @@ impl Player {
     }
 
     #[method]
-    fn _init(&mut self) {
-        let input = Input::godot_singleton();
-        input.set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
-    }
-
-    #[method]
     fn _ready(&mut self, #[base] base: &KinematicBody) {
         base.upcast::<Node>().print_tree_pretty();
         self.player_pivot = OptRef::from_node(base, "Pivot");
@@ -61,6 +55,7 @@ impl Player {
         self.cam_pivot_x = OptRef::from_node(base, "CameraPivot/cam_x_rot");
         // init x_rot according to scene setup
         self.cam_x_rot = -self.cam_pivot_x.tref().rotation().x;
+        Input::godot_singleton().set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
     }
 
     #[method]
@@ -104,9 +99,12 @@ impl Player {
     fn process_input(&mut self) {
         let input = Input::godot_singleton();
 
-        // movement
-        self.motion =
-            input.get_vector("move_left", "move_right", "move_forward", "move_back", -1.0);
+        // movement ... for whatever reason the `get_vector` do a small pause when hit WSAD :/
+        // self.motion = input.get_vector("move_left", "move_right", "move_forward", "move_back", -1.0);
+        self.motion.x = (input.get_action_strength("move_right", false)
+            - input.get_action_strength("move_left", false)) as f32;
+        self.motion.y = (input.get_action_strength("move_back", false)
+            - input.get_action_strength("move_forward", false)) as f32;
         let motion_len = self.motion.length();
         // adjust length only if it goes over 1.0 to allow walking
         if motion_len > 1.0 {
