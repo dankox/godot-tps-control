@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use gdnative::{
     api::{InputEventMouseMotion, Position3D},
     prelude::*,
@@ -7,8 +9,9 @@ use crate::{clamp, OptRef};
 
 const CAMERA_MOUSE_SPEED: f32 = 0.001;
 const CAMERA_CONTROLLER_SPEED: f32 = 0.1;
-const CAMERA_X_ROT_MIN: f32 = -89.9;
-const CAMERA_X_ROT_MAX: f32 = 70.0;
+const DEG_TO_RAD: f32 = PI / 180.0f32;
+const CAMERA_X_ROT_MIN: f32 = -89.9 * DEG_TO_RAD;
+const CAMERA_X_ROT_MAX: f32 = 70.0 * DEG_TO_RAD;
 
 #[derive(NativeClass)]
 #[inherit(KinematicBody)]
@@ -22,10 +25,10 @@ pub struct Player {
 
     velocity: Vector3,
     motion: Vector2,
+    player_pivot: OptRef<Spatial>,
     cam_x_rot: f32,
     cam_pivot: OptRef<Position3D>,
     cam_pivot_x: OptRef<Position3D>,
-    // camera: OptRef<Camera>,
 }
 
 #[methods]
@@ -37,6 +40,7 @@ impl Player {
             jump_impulse: 20.0,
             velocity: Vector3::ZERO,
             motion: Vector2::ZERO,
+            player_pivot: OptRef::None,
             cam_x_rot: 0.0,
             cam_pivot: OptRef::None,
             cam_pivot_x: OptRef::None,
@@ -52,9 +56,11 @@ impl Player {
     #[method]
     fn _ready(&mut self, #[base] base: &KinematicBody) {
         base.upcast::<Node>().print_tree_pretty();
-        // self.cam_pivot = OptRef::Some(get_node!(base, "CameraPivot", Position3D));
+        self.player_pivot = OptRef::from_node(base, "Pivot");
         self.cam_pivot = OptRef::from_node(base, "CameraPivot");
         self.cam_pivot_x = OptRef::from_node(base, "CameraPivot/cam_x_rot");
+        // init x_rot according to scene setup
+        self.cam_x_rot = -self.cam_pivot_x.tref().rotation().x;
     }
 
     #[method]
@@ -70,42 +76,44 @@ impl Player {
 
     #[method]
     fn _physics_process(&mut self, #[base] base: &KinematicBody, _delta: f64) {
-        // godot_print!("delta: {}", delta);
         self.process_input();
-        // self.velocity.x = self.motion.x * self.speed;
-        // self.velocity.z = self.motion.y * self.speed;
-        // self.velocity.y -= self.fall_acceleration * self.speed;
         self.velocity.x = self.motion.x;
         self.velocity.z = self.motion.y;
         self.velocity.y -= self.fall_acceleration;
 
-        self.velocity = base.move_and_slide(self.velocity * self.speed, Vector3::UP, false, 4, 0.785398, true);
         // or last parameter `false` to interact with RigidBody?
+        self.velocity = base.move_and_slide(
+            self.velocity * self.speed,
+            Vector3::UP,
+            false,
+            4,
+            0.785398,
+            true,
+        );
+
+        // orient player in the motion Vector2 direction
+        if self.motion.length() > 0.1 {
+            let angle = Vector2::UP.angle_to(self.motion);
+            let basis = Basis::IDENTITY.rotated(Vector3::UP, -angle);
+            let mut tr = self.player_pivot.tref().transform();
+            tr.basis = basis.orthonormalized();
+            self.player_pivot.set_transform(tr);
+        }
     }
 
     fn process_input(&mut self) {
-        let mut look = Vector2::ZERO;
         let input = Input::godot_singleton();
 
         // movement
-        self.motion.x = (input.get_action_strength("move_right", false)
-            - input.get_action_strength("move_left", false)) as f32;
-        self.motion.y = (input.get_action_strength("move_back", false)
-            - input.get_action_strength("move_forward", false)) as f32;
+        self.motion =
+            input.get_vector("move_left", "move_right", "move_forward", "move_back", -1.0);
         // adjust length only if it goes over 1.0 to allow walking
         if self.motion.length() > 1.0 {
             self.motion = self.motion.normalized();
-            // godot_print!("motion {}x{}", self.motion.x, self.motion.y);
         }
 
         // controller camera
-        look.x = (input.get_action_strength("look_right", false)
-            - input.get_action_strength("look_left", false)) as f32;
-        look.y = (input.get_action_strength("look_down", false)
-            - input.get_action_strength("look_up", false)) as f32;
-        if look.length_squared() > 0.0 {
-            look = look.normalized()
-        }
+        let look = input.get_vector("look_left", "look_right", "look_up", "look_down", -1.0);
         self.rotate_cam(look * CAMERA_CONTROLLER_SPEED);
     }
 
@@ -124,8 +132,8 @@ impl Player {
         self.cam_x_rot += look.y;
         self.cam_x_rot = clamp(
             self.cam_x_rot,
-            CAMERA_X_ROT_MIN.to_radians(),
-            CAMERA_X_ROT_MAX.to_radians(),
+            CAMERA_X_ROT_MIN,
+            CAMERA_X_ROT_MAX,
         );
         self.cam_pivot_x
             .tref()
