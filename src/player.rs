@@ -107,15 +107,46 @@ impl Player {
         // movement
         self.motion =
             input.get_vector("move_left", "move_right", "move_forward", "move_back", -1.0);
+        let motion_len = self.motion.length();
         // adjust length only if it goes over 1.0 to allow walking
-        if self.motion.length() > 1.0 {
+        if motion_len > 1.0 {
             self.motion = self.motion.normalized();
         }
 
         // controller camera
         let look = input.get_vector("look_left", "look_right", "look_up", "look_down", -1.0);
         self.rotate_cam(look * CAMERA_CONTROLLER_SPEED);
+
+        // adjust movement according to camera basis
+        if motion_len > 0.1 {
+            self.motion = self.vec2_relative_to_cam(self.motion);
+        }
     }
+
+    fn vec2_relative_to_cam(&mut self, v: Vector2) -> Vector2 {
+        let mut cam_quat = Quat::IDENTITY;
+        // if no camera, return "forward" vector
+        if let OptRef::None = self.cam_pivot {
+            godot_error!("cam_direction(): no cam attached!");
+        } else {
+            cam_quat = self.cam_pivot.tref().transform().basis.to_quat();
+        }
+        let motion_vec = Vector3::new(v.x, 0.0, v.y);
+        let result = cam_quat * motion_vec;
+        Vector2 {
+            x: result.x,
+            y: result.z,
+        }
+    }
+
+    // TODO: not working, can this be fixed? should be doable by basis and matrix manipulation...
+    // fn orient_by_cam(&mut self, v: Vector2) -> Vector2 {
+    //     let cam_basis = self.cam_pivot.tref().transform().basis;
+    //     Vector2 {
+    //         x: v.x * cam_basis.a().x - v.y * cam_basis.a().z,
+    //         y: v.x * cam_basis.c().x + v.y * cam_basis.c().z,
+    //     }
+    // }
 
     fn rotate_cam(&mut self, look: Vector2) {
         // if no camera, just finish
@@ -126,15 +157,13 @@ impl Player {
         // process camera rotation
         let cam = self.cam_pivot.tref();
         // rotate left/right
-        cam.rotate_y(-look.x as f64);
+        if look.x != 0.0 {
+            cam.rotate_y(-look.x as f64);
+        }
 
         // compute how much to rotate
         self.cam_x_rot += look.y;
-        self.cam_x_rot = clamp(
-            self.cam_x_rot,
-            CAMERA_X_ROT_MIN,
-            CAMERA_X_ROT_MAX,
-        );
+        self.cam_x_rot = clamp(self.cam_x_rot, CAMERA_X_ROT_MIN, CAMERA_X_ROT_MAX);
         self.cam_pivot_x
             .tref()
             .set_rotation(Vector3::new(-self.cam_x_rot, 0.0, 0.0));
