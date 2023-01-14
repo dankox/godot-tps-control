@@ -1,7 +1,8 @@
 use std::f32::consts::PI;
 
 use gdnative::{
-    api::{InputEventMouseMotion, Position3D},
+    api::{InputEventMouseMotion, SpringArm},
+    globalscope::*,
     prelude::*,
 };
 
@@ -9,9 +10,10 @@ use crate::{clamp, OptRef};
 
 const CAMERA_MOUSE_SPEED: f32 = 0.001;
 const CAMERA_CONTROLLER_SPEED: f32 = 0.1;
-const DEG_TO_RAD: f32 = PI / 180.0f32;
-const CAMERA_X_ROT_MIN: f32 = -89.9 * DEG_TO_RAD;
-const CAMERA_X_ROT_MAX: f32 = 70.0 * DEG_TO_RAD;
+const LERP_VAL: f32 = 0.15;
+// const DEG_TO_RAD: f32 = PI / 180.0f32;
+// const CAMERA_X_ROT_MIN: f32 = -89.9 * DEG_TO_RAD;
+// const CAMERA_X_ROT_MAX: f32 = 70.0 * DEG_TO_RAD;
 
 #[derive(NativeClass)]
 #[inherit(KinematicBody)]
@@ -24,11 +26,10 @@ pub struct Player {
     jump_impulse: f32,
 
     velocity: Vector3,
-    motion: Vector2,
     player_pivot: OptRef<Spatial>,
     cam_x_rot: f32,
-    cam_pivot: OptRef<Position3D>,
-    cam_pivot_x: OptRef<Position3D>,
+    cam_pivot: OptRef<Spatial>,
+    cam_pivot_x: OptRef<SpringArm>,
 }
 
 #[methods]
@@ -39,7 +40,6 @@ impl Player {
             fall_acceleration: 75.0,
             jump_impulse: 20.0,
             velocity: Vector3::ZERO,
-            motion: Vector2::ZERO,
             player_pivot: OptRef::None,
             cam_x_rot: 0.0,
             cam_pivot: OptRef::None,
@@ -71,10 +71,7 @@ impl Player {
 
     #[method]
     fn _physics_process(&mut self, #[base] base: &KinematicBody, _delta: f64) {
-        self.process_input();
-        self.velocity.x = self.motion.x;
-        self.velocity.z = self.motion.y;
-        self.velocity.y -= self.fall_acceleration;
+        self.process_input(base);
 
         // or last parameter `false` to interact with RigidBody?
         self.velocity = base.move_and_slide(
@@ -85,66 +82,46 @@ impl Player {
             0.785398,
             true,
         );
-
-        // orient player in the motion Vector2 direction
-        if self.motion.length() > 0.1 {
-            let angle = Vector2::UP.angle_to(self.motion);
-            let basis = Basis::IDENTITY.rotated(Vector3::UP, -angle);
-            let mut tr = self.player_pivot.tref().transform();
-            tr.basis = basis.orthonormalized();
-            self.player_pivot.set_transform(tr);
-        }
     }
 
-    fn process_input(&mut self) {
+    fn process_input(&mut self, base: &KinematicBody) {
         let input = Input::godot_singleton();
 
         // movement ... for whatever reason the `get_vector` do a small pause when hit WSAD :/
-        // self.motion = input.get_vector("move_left", "move_right", "move_forward", "move_back", -1.0);
-        self.motion.x = (input.get_action_strength("move_right", false)
-            - input.get_action_strength("move_left", false)) as f32;
-        self.motion.y = (input.get_action_strength("move_back", false)
-            - input.get_action_strength("move_forward", false)) as f32;
-        let motion_len = self.motion.length();
-        // adjust length only if it goes over 1.0 to allow walking
-        if motion_len > 1.0 {
-            self.motion = self.motion.normalized();
-        }
+        let ind = input.get_vector("move_left", "move_right", "move_forward", "move_back", -1.0);
+        let mut direction = base.transform().basis * Vector3::new(ind.x, 0.0, ind.y);
 
-        // controller camera
+        // handle camera
         let look = input.get_vector("look_left", "look_right", "look_up", "look_down", -1.0);
         self.rotate_cam(look * CAMERA_CONTROLLER_SPEED);
 
         // adjust movement according to camera basis
-        if motion_len > 0.1 {
-            self.motion = self.vec2_relative_to_cam(self.motion);
-        }
-    }
+        let dir_len = direction.length();
+        if dir_len > 0.0 {
+            // adjust direction according to camera if it exists
+            if let OptRef::Some(_) = self.cam_pivot {
+                direction = direction.rotated(Vector3::UP, self.cam_pivot.tref().rotation().y);
+            }
+            if dir_len > 1.0 {
+                direction = direction.normalized();
+            }
+            self.velocity.x = direction.x;
+            self.velocity.y -= self.fall_acceleration;
+            self.velocity.z = direction.z;
 
-    fn vec2_relative_to_cam(&mut self, v: Vector2) -> Vector2 {
-        let mut cam_quat = Quat::IDENTITY;
-        // if no camera, return "forward" vector
-        if let OptRef::None = self.cam_pivot {
-            godot_error!("cam_direction(): no cam attached!");
+            // orient player in the direction of the velocity
+            let mut player_rot = self.player_pivot.tref().rotation();
+            player_rot.y = lerp_angle(
+                player_rot.y..(-self.velocity.x).atan2(-self.velocity.z),
+                LERP_VAL,
+            );
+            self.player_pivot.tref().set_rotation(player_rot);
         } else {
-            cam_quat = self.cam_pivot.tref().transform().basis.to_quat();
-        }
-        let motion_vec = Vector3::new(v.x, 0.0, v.y);
-        let result = cam_quat * motion_vec;
-        Vector2 {
-            x: result.x,
-            y: result.z,
+            self.velocity.x = move_toward(self.velocity.x..=0.0, self.speed);
+            self.velocity.y -= self.fall_acceleration;
+            self.velocity.z = move_toward(self.velocity.z..=0.0, self.speed);
         }
     }
-
-    // TODO: not working, can this be fixed? should be doable by basis and matrix manipulation...
-    // fn orient_by_cam(&mut self, v: Vector2) -> Vector2 {
-    //     let cam_basis = self.cam_pivot.tref().transform().basis;
-    //     Vector2 {
-    //         x: v.x * cam_basis.a().x - v.y * cam_basis.a().z,
-    //         y: v.x * cam_basis.c().x + v.y * cam_basis.c().z,
-    //     }
-    // }
 
     fn rotate_cam(&mut self, look: Vector2) {
         // if no camera, just finish
@@ -161,7 +138,7 @@ impl Player {
 
         // compute how much to rotate
         self.cam_x_rot += look.y;
-        self.cam_x_rot = clamp(self.cam_x_rot, CAMERA_X_ROT_MIN, CAMERA_X_ROT_MAX);
+        self.cam_x_rot = clamp(self.cam_x_rot, -PI / 4.0, PI / 4.0);
         self.cam_pivot_x
             .tref()
             .set_rotation(Vector3::new(-self.cam_x_rot, 0.0, 0.0));

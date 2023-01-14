@@ -28,3 +28,25 @@ pub fn instance_node_scene(scene: &Ref<PackedScene>) -> Ref<Node> {
     // let inst = unsafe {inst.assume_unique()};
     // inst.try_cast::<Spatial>().expect("")
 }
+
+pub fn move_toward(from: f32, to: f32, delta: f32) -> f32 {
+    let len = to - from;
+    if len.abs() <= delta {
+        to
+    } else {
+        if len == 0.0 {
+            from
+        } else if len < 0.0 {
+            from - 1.0 * delta
+        } else {
+            from + 1.0 * delta
+        }
+    }
+    // let len = to - from;
+    // // let len = d.length();
+    // if len <= delta || len < 0.01 {
+    //     to
+    // } else {
+    //     from + len
+    // }
+}

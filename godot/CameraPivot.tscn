@@ -1,13 +1,13 @@
 [gd_scene format=2]
 
-[node name="CameraPivot" type="Position3D"]
+[node name="CameraPivot" type="Spatial"]
 __meta__ = {
 "_edit_group_": true
 }
 
-[node name="cam_x_rot" type="Position3D" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 2.38419e-07, 2.38419e-07 )
+[node name="cam_x_rot" type="SpringArm" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.38419e-07, 2.38419e-07 )
+spring_length = 5.0
 
 [node name="Camera" type="Camera" parent="cam_x_rot"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4 )
 far = 200.0
