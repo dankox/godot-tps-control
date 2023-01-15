@@ -81,13 +81,15 @@ impl Player {
                 base.move_and_slide(self.velocity, Vector3::UP, false, 4, 0.785398, true);
         }
     }
+}
 
+impl Player {
     fn process_input(&mut self, base: &KinematicBody) {
         let input = Input::godot_singleton();
 
         // movement ... for whatever reason the `get_vector` do a small pause when hit WSAD :/
-        let ind = input.get_vector("move_left", "move_right", "move_forward", "move_back", -1.0);
-        let mut direction = base.transform().basis * Vector3::new(ind.x, 0.0, ind.y);
+        let inp = input.get_vector("move_left", "move_right", "move_forward", "move_back", -1.0);
+        let direction = base.transform().basis * Vector3::new(inp.x, 0.0, inp.y);
 
         // handle camera
         let look = input.get_vector("look_left", "look_right", "look_up", "look_down", -1.0);
@@ -98,6 +100,12 @@ impl Player {
             self.velocity.y += self.jump_impulse;
         }
 
+        // velocity is used for movement
+        self.update_velocity(direction);
+    }
+
+    fn update_velocity(&mut self, direction: Vector3) {
+        let mut direction = direction;
         // adjust movement according to camera basis
         let dir_len = direction.length();
         if dir_len > 0.0 {
