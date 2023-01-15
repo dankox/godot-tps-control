@@ -1,22 +1,24 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://World.gdns" type="Script" id=1]
 [ext_resource path="res://CameraPivot.tscn" type="PackedScene" id=2]
 [ext_resource path="res://Player.tscn" type="PackedScene" id=3]
 [ext_resource path="res://Pillar.tscn" type="PackedScene" id=4]
+[ext_resource path="res://addons/kenney_prototypes/assets/colors/green/materials/material_010.tres" type="Material" id=5]
+[ext_resource path="res://default_env.tres" type="Environment" id=6]
 
 [sub_resource type="BoxShape" id=1]
 extents = Vector3( 1000, 0.1, 1000 )
 
-[sub_resource type="SpatialMaterial" id=5]
-albedo_color = Color( 0.239216, 0.317647, 0.117647, 1 )
-
 [sub_resource type="CubeMesh" id=2]
-material = SubResource( 5 )
+material = ExtResource( 5 )
 size = Vector3( 2000, 0.2, 2000 )
 
 [sub_resource type="CylinderMesh" id=6]
 height = 4.0
+
+[sub_resource type="ConvexPolygonShape" id=7]
+points = PoolVector3Array( 0.968965, 1.91371, 0.242241, -0.968965, -1.91371, -0.242241, -0.921405, -1.91579, -0.38797, -0.921405, 1.91579, -0.38797, -0.38797, 1.91579, 0.921405, 0.485332, -1.91706, 0.87356, 0.485332, -1.91706, -0.87356, 0.242241, 1.91371, -0.968965, -0.775924, -1.91575, 0.630462, 0.968965, -1.91371, -0.242241, -0.38797, -1.91579, -0.921405, 0.87356, 1.91706, -0.485332, -0.921405, 1.91579, 0.38797, 0.485332, 1.91706, 0.87356, -0.242241, -1.91371, 0.968965, -0.576136, 1.89694, -0.816255, 0.87356, -1.91706, 0.485332, 0.242241, 1.91371, 0.968965, -0.968965, -1.91371, 0.242241, 0.775924, 1.91575, 0.630462, -0.242241, 1.91371, -0.968965, 0.242241, -1.91371, -0.968965, -0.775924, -1.91575, -0.630462, 0.681502, 1.92313, -0.730303, 0.775924, -1.91575, -0.630462, -0.968965, 1.91371, 0.242241, -0.630462, 1.91575, 0.775924, 0.968965, -1.91371, 0.242241, 0.968965, 1.91371, -0.242241, 0.242241, -1.91371, 0.968965, -0.48519, -1.91725, 0.873646, 0.681502, -1.92313, 0.730303, -0.968965, 1.91371, -0.242241, -0.242241, 1.91371, 0.968965, -0.242241, -1.91371, -0.968965, -0.775924, 1.91575, -0.630462, 0.38797, 1.91579, -0.921405, -0.630462, -1.91575, -0.775924, -0.775924, 1.91575, 0.630462, 0.921405, 1.91579, 0.38797, 0.921405, -1.91579, -0.38797, 0.681502, 1.92313, 0.730303, 0.681502, -1.92313, -0.730303, -0.921405, -1.91579, 0.38797, -0.630462, -1.91575, 0.775924, 0.576136, 1.89694, -0.816255, -0.38797, 1.91579, -0.921405, 0.38797, 1.91579, 0.921405, -0.48519, -1.91725, -0.873646, 0.775924, 1.91575, -0.630462, 0.775924, -1.91575, 0.630462, -0.816255, 1.89694, -0.576136, -0.816255, -1.89694, 0.576136, 0.576136, 1.89694, 0.816255, -0.48519, 1.91725, 0.873646, 0.87356, 1.91706, 0.485332, 0.87356, -1.91706, -0.485332, 0.921405, 1.91579, -0.38797, 0.921405, -1.91579, 0.38797, -0.38797, -1.91579, 0.921405, 0.38797, -1.91579, 0.921405, 0.38797, -1.91579, -0.921405, -0.630462, 1.91575, -0.775924, -0.816255, -1.89694, -0.576136 )
 
 [sub_resource type="SpatialMaterial" id=3]
 albedo_color = Color( 0.666667, 0.0117647, 0.94902, 1 )
@@ -29,18 +31,24 @@ radius = 0.5
 script = ExtResource( 1 )
 
 [node name="Ground" type="StaticBody" parent="."]
+collision_layer = 4
+collision_mask = 0
 
 [node name="ground" type="CollisionShape" parent="Ground"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0 )
 shape = SubResource( 1 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Ground"]
+[node name="ground_mesh" type="MeshInstance" parent="Ground"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0 )
 mesh = SubResource( 2 )
 
 [node name="MeshInstance2" type="MeshInstance" parent="Ground"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -37.235, 2, -37.8366 )
 mesh = SubResource( 6 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Ground"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -37.235, 2, -37.8366 )
+shape = SubResource( 7 )
 
 [node name="MeshInstance3" type="MeshInstance" parent="Ground"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 14.2259, 2, -14.9903 )
@@ -75,5 +83,8 @@ shadow_enabled = true
 
 [node name="CameraPivot" parent="Player" instance=ExtResource( 2 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0 )
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource( 6 )
 
 [editable path="Player/CameraPivot"]
