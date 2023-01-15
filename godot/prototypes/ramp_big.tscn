@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/kenney_prototypes/assets/colors/light/materials/material_010.tres" type="Material" id=1]
+
+[node name="ramp_big" type="CSGPolygon"]
+polygon = PoolVector2Array( 0, 0, 0, 2, 1, 2, 7, 0 )
+depth = 3.0
+material = ExtResource( 1 )

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/kenney_prototypes/assets/colors/dark/materials/material_010.tres" type="Material" id=1]
+
+[node name="wall" type="CSGBox"]
+width = 1.0
+depth = 5.0
+material = ExtResource( 1 )
