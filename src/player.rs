@@ -56,7 +56,9 @@ impl Player {
         self.cam_pivot = OptRef::from_node(base, "CameraPivot");
         self.cam_arm_x = OptRef::from_node(base, "CameraPivot/cam_x_rot");
         // init x_rot according to scene setup
-        self.cam_x_rot = -self.cam_arm_x.tref().rotation().x;
+        if let OptRef::Some(_) = self.cam_arm_x {
+            self.cam_x_rot = -self.cam_arm_x.tref().rotation().x;
+        }
         Input::godot_singleton().set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
     }
 
