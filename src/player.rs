@@ -29,7 +29,7 @@ pub struct Player {
     player_pivot: OptRef<Spatial>,
     cam_x_rot: f32,
     cam_pivot: OptRef<Spatial>,
-    cam_pivot_x: OptRef<SpringArm>,
+    cam_arm_x: OptRef<SpringArm>,
 }
 
 #[methods]
@@ -43,7 +43,7 @@ impl Player {
             player_pivot: OptRef::None,
             cam_x_rot: 0.0,
             cam_pivot: OptRef::None,
-            cam_pivot_x: OptRef::None,
+            cam_arm_x: OptRef::None,
         }
     }
 
@@ -52,9 +52,9 @@ impl Player {
         base.upcast::<Node>().print_tree_pretty();
         self.player_pivot = OptRef::from_node(base, "Pivot");
         self.cam_pivot = OptRef::from_node(base, "CameraPivot");
-        self.cam_pivot_x = OptRef::from_node(base, "CameraPivot/cam_x_rot");
+        self.cam_arm_x = OptRef::from_node(base, "CameraPivot/cam_x_rot");
         // init x_rot according to scene setup
-        self.cam_x_rot = -self.cam_pivot_x.tref().rotation().x;
+        self.cam_x_rot = -self.cam_arm_x.tref().rotation().x;
         Input::godot_singleton().set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
     }
 
@@ -70,18 +70,16 @@ impl Player {
     }
 
     #[method]
-    fn _physics_process(&mut self, #[base] base: &KinematicBody, _delta: f64) {
+    fn _physics_process(&mut self, #[base] base: &KinematicBody, delta: f64) {
         self.process_input(base);
 
         // or last parameter `false` to interact with RigidBody?
-        self.velocity = base.move_and_slide(
-            self.velocity * self.speed,
-            Vector3::UP,
-            false,
-            4,
-            0.785398,
-            true,
-        );
+        if !base.is_on_floor() || self.velocity.length_squared() > 0.0 {
+            // apply gravity and move
+            self.velocity.y -= self.fall_acceleration * (delta as f32);
+            self.velocity =
+                base.move_and_slide(self.velocity, Vector3::UP, false, 4, 0.785398, true);
+        }
     }
 
     fn process_input(&mut self, base: &KinematicBody) {
@@ -95,6 +93,11 @@ impl Player {
         let look = input.get_vector("look_left", "look_right", "look_up", "look_down", -1.0);
         self.rotate_cam(look * CAMERA_CONTROLLER_SPEED);
 
+        // handle jump
+        if base.is_on_floor() && input.is_action_just_pressed("jump", false) {
+            self.velocity.y += self.jump_impulse;
+        }
+
         // adjust movement according to camera basis
         let dir_len = direction.length();
         if dir_len > 0.0 {
@@ -105,9 +108,9 @@ impl Player {
             if dir_len > 1.0 {
                 direction = direction.normalized();
             }
-            self.velocity.x = direction.x;
-            self.velocity.y -= self.fall_acceleration;
-            self.velocity.z = direction.z;
+            // apply speed
+            self.velocity.x = direction.x * self.speed;
+            self.velocity.z = direction.z * self.speed;
 
             // orient player in the direction of the velocity
             let mut player_rot = self.player_pivot.tref().rotation();
@@ -118,7 +121,6 @@ impl Player {
             self.player_pivot.tref().set_rotation(player_rot);
         } else {
             self.velocity.x = move_toward(self.velocity.x..=0.0, self.speed);
-            self.velocity.y -= self.fall_acceleration;
             self.velocity.z = move_toward(self.velocity.z..=0.0, self.speed);
         }
     }
@@ -139,7 +141,7 @@ impl Player {
         // compute how much to rotate
         self.cam_x_rot += look.y;
         self.cam_x_rot = clamp(self.cam_x_rot, -PI / 4.0, PI / 4.0);
-        self.cam_pivot_x
+        self.cam_arm_x
             .tref()
             .set_rotation(Vector3::new(-self.cam_x_rot, 0.0, 0.0));
     }
