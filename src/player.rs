@@ -26,6 +26,7 @@ pub struct Player {
     jump_impulse: f32,
 
     velocity: Vector3,
+    move_disabled: f64,
     mouse_look: Vector2,
     player_pivot: OptRef<Spatial>,
     cam_x_rot: f32,
@@ -41,6 +42,7 @@ impl Player {
             fall_acceleration: 75.0,
             jump_impulse: 20.0,
             velocity: Vector3::ZERO,
+            move_disabled: 0.0,
             mouse_look: Vector2::ZERO,
             player_pivot: OptRef::None,
             cam_x_rot: 0.0,
@@ -82,12 +84,21 @@ impl Player {
 
     #[method]
     fn _physics_process(&mut self, #[base] base: &KinematicBody, delta: f64) {
+        self.move_disabled -= delta;
+        let was_grounded = base.is_on_floor();
         // move only when there is velocity or is not on ground
-        if !base.is_on_floor() || self.velocity.length_squared() > 0.0 {
+        if !was_grounded || self.velocity.length_squared() > 0.0 {
             // apply gravity and move
             self.velocity.y -= self.fall_acceleration * (delta as f32);
-            self.velocity =
-                base.move_and_slide(self.velocity, Vector3::UP, false, 4, 0.785398, true);
+
+            // save current velocity and move and slide
+            let oldv = self.velocity;
+            self.velocity = base.move_and_slide(oldv, Vector3::UP, true, 4, 0.785398, true);
+
+            // if not on floor and it looks like player is sliding up (not on floor), disable movement for .2 seconds
+            if !base.is_on_floor() && self.velocity.y > 0.0 && oldv.y + 0.01 < self.velocity.y {
+                self.move_disabled = 0.2;
+            }
         }
     }
 }
@@ -130,14 +141,18 @@ impl Player {
             if dir_len > 1.0 {
                 direction = direction.normalized();
             }
-            // apply speed
-            self.velocity.x = direction.x * self.speed;
-            self.velocity.z = direction.z * self.speed;
+            // we do not want to push forward against steep slopes when not on floor
+            // apply speed only when movement wasn't disabled
+            if self.move_disabled < 0.001 {
+                self.velocity.x = direction.x * self.speed;
+                self.velocity.z = direction.z * self.speed;
+            }
 
             // orient player in the direction of the velocity
             let mut player_rot = self.player_pivot.tref().rotation();
             player_rot.y = lerp_angle(
-                player_rot.y..(-self.velocity.x).atan2(-self.velocity.z),
+                // use direction instead of velocity, because velocity might not be updated
+                player_rot.y..(-direction.x).atan2(-direction.z),
                 LERP_VAL,
             );
             self.player_pivot.tref().set_rotation(player_rot);
