@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://addons/kenney_prototypes/assets/colors/dark/materials/material_009.tres" type="Material" id=1]
+[ext_resource path="res://prototypes/wall_top.tscn" type="PackedScene" id=2]
+
+[node name="wall_top_corner" type="CSGCombiner"]
+
+[node name="CSGBox" type="CSGBox" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, -0.6 )
+width = 6.0
+height = 4.0
+depth = 4.0
+material = ExtResource( 1 )
+
+[node name="wall_top3" parent="CSGBox" instance=ExtResource( 2 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -0.5, 0.6 )
+operation = 1
+
+[node name="CSGBox2" type="CSGBox" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0999999, 0, 0 )
+width = 4.0
+height = 4.0
+depth = 6.0
+material = ExtResource( 1 )
+
+[node name="wall_top2" parent="CSGBox2" instance=ExtResource( 2 )]
+transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0.6, -0.5, -2 )
+operation = 1

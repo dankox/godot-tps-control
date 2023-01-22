@@ -2,10 +2,10 @@
 
 [ext_resource path="res://World.gdns" type="Script" id=1]
 [ext_resource path="res://Player.tscn" type="PackedScene" id=2]
-[ext_resource path="res://Level.tscn" type="PackedScene" id=3]
 [ext_resource path="res://prototypes/Pillar.tscn" type="PackedScene" id=4]
 [ext_resource path="res://addons/kenney_prototypes/assets/colors/green/materials/material_010.tres" type="Material" id=5]
 [ext_resource path="res://default_env.tres" type="Environment" id=6]
+[ext_resource path="res://Level_castle.tscn" type="PackedScene" id=7]
 
 [sub_resource type="BoxShape" id=1]
 extents = Vector3( 1000, 0.1, 1000 )
@@ -70,9 +70,6 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 19.0482, 0, -45.8138 )
 [node name="Pillar4" parent="Ground" instance=ExtResource( 4 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -33.0135, 0, -12.1809 )
 
-[node name="Level" parent="." instance=ExtResource( 3 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -20 )
-
 [node name="helper(player)" type="MeshInstance" parent="."]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 1, 0 )
 visible = false
@@ -86,3 +83,6 @@ shadow_enabled = true
 environment = ExtResource( 6 )
 
 [node name="Player" parent="." instance=ExtResource( 2 )]
+
+[node name="level_castle" parent="." instance=ExtResource( 7 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, -43 )

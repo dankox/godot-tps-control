@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/kenney_prototypes/assets/colors/dark/materials/material_009.tres" type="Material" id=1]
+
+[node name="wall_top" type="CSGCombiner"]
+use_collision = true
+
+[node name="wall_front" type="CSGPolygon" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.5 )
+polygon = PoolVector2Array( 0, 0, 0, 2, 2, 2, 1.5, 1, 3.5, 1, 3, 2, 4.5, 2, 5, 1, 5.5, 1, 6, 2, 7.5, 2, 7, 1, 9, 1, 8.5, 2, 10, 2, 10, 0 )
+material = ExtResource( 1 )
+
+[node name="wall_back" type="CSGPolygon" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.5 )
+polygon = PoolVector2Array( 0, 0, 0, 2, 2, 2, 1.5, 1, 3.5, 1, 3, 2, 4.5, 2, 5, 1, 5.5, 1, 6, 2, 7.5, 2, 7, 1, 9, 1, 8.5, 2, 10, 2, 10, 0 )
+material = ExtResource( 1 )
+
+[node name="wall_bottom" type="CSGBox" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -0.2, 0 )
+width = 10.0
+height = 0.5
+depth = 4.0
+material = ExtResource( 1 )

@@ -1,0 +1,79 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://addons/kenney_prototypes/assets/colors/green/materials/material_010.tres" type="Material" id=1]
+[ext_resource path="res://prototypes/gate.tscn" type="PackedScene" id=2]
+[ext_resource path="res://prototypes/big_wall.tscn" type="PackedScene" id=3]
+[ext_resource path="res://prototypes/wall_top.tscn" type="PackedScene" id=4]
+[ext_resource path="res://prototypes/wall_top_corner.tscn" type="PackedScene" id=5]
+
+[node name="level_castle" type="Spatial"]
+
+[node name="ground" type="CSGBox" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.2, 0, 0, 0, 1, 0, -0.1, 0 )
+use_collision = true
+collision_layer = 4
+collision_mask = 3
+width = 200.0
+height = 1.0
+depth = 200.0
+material = ExtResource( 1 )
+
+[node name="castle" type="CSGCombiner" parent="."]
+use_collision = true
+collision_layer = 4
+collision_mask = 3
+
+[node name="gate" parent="castle" instance=ExtResource( 2 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0, 0 )
+
+[node name="wall_top2" parent="castle/gate" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 10.5, 0 )
+
+[node name="big_wall" parent="castle" instance=ExtResource( 3 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -20.5, 5, 0 )
+width = 14.0
+
+[node name="wall_top" parent="castle/big_wall" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 5.5, 0 )
+
+[node name="wall_top_corner" parent="castle/big_wall" instance=ExtResource( 5 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 6, 0 )
+
+[node name="big_wall5" parent="castle" instance=ExtResource( 3 )]
+transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -27, 5, 6.5 )
+width = 14.0
+
+[node name="wall_top" parent="castle/big_wall5" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 5.5, 0 )
+
+[node name="big_wall2" parent="castle" instance=ExtResource( 3 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 5, 0 )
+
+[node name="wall_top" parent="castle/big_wall2" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 5.5, 0 )
+
+[node name="big_wall6" parent="castle" instance=ExtResource( 3 )]
+transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -27, 5, 16.5 )
+
+[node name="wall_top" parent="castle/big_wall6" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 5.5, 0 )
+
+[node name="big_wall3" parent="castle" instance=ExtResource( 3 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 5, 0 )
+
+[node name="wall_top" parent="castle/big_wall3" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 5.5, 0 )
+
+[node name="big_wall4" parent="castle" instance=ExtResource( 3 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 5, 0 )
+
+[node name="wall_top" parent="castle/big_wall4" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 5.5, 0 )
+
+[node name="big_wall7" parent="castle" instance=ExtResource( 3 )]
+transform = Transform( 2.98023e-08, 0, -1, -0.258819, 0.965926, -7.71341e-09, 0.965926, 0.258819, 2.87868e-08, -27, 3, 28.5 )
+width = 16.0
+
+[node name="big_wall8" parent="castle" instance=ExtResource( 3 )]
+transform = Transform( 2.98023e-08, 0, -1, 0.258819, 0.965926, 7.71341e-09, 0.965926, -0.258819, 2.87868e-08, -24, -1.5, 31 )
+width = 16.0

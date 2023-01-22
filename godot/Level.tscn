@@ -1,10 +1,13 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://addons/kenney_prototypes/assets/colors/green/materials/material_010.tres" type="Material" id=1]
 [ext_resource path="res://prototypes/ramp_small.tscn" type="PackedScene" id=2]
 [ext_resource path="res://prototypes/ramp_big.tscn" type="PackedScene" id=3]
 [ext_resource path="res://prototypes/bridge.tscn" type="PackedScene" id=4]
 [ext_resource path="res://prototypes/wall.tscn" type="PackedScene" id=5]
+[ext_resource path="res://prototypes/gate.tscn" type="PackedScene" id=8]
+[ext_resource path="res://prototypes/wall_top.tscn" type="PackedScene" id=9]
+[ext_resource path="res://prototypes/wall_top_corner.tscn" type="PackedScene" id=10]
 
 [node name="Level" type="Spatial"]
 
@@ -44,3 +47,13 @@ transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -5.5, 0
 [node name="bridge" parent="CSGCombiner" instance=ExtResource( 4 )]
 transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -6, 4.5, 3 )
 width = 4.0
+
+[node name="gate" parent="." instance=ExtResource( 8 )]
+visible = false
+
+[node name="wall_top" parent="." instance=ExtResource( 9 )]
+visible = false
+
+[node name="wall_top_corner" parent="." instance=ExtResource( 10 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11, 0 )
+visible = false

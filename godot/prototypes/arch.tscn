@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/kenney_prototypes/assets/colors/dark/materials/material_008.tres" type="Material" id=1]
+
+[node name="arch" type="CSGPolygon"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 1.5 )
+polygon = PoolVector2Array( 0, 0, 0, 4.5, 1, 6, 3, 6, 4, 4.5, 4, 0 )
+depth = 3.0
+material = ExtResource( 1 )
